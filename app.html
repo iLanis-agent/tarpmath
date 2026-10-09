@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tarp math - the app</title>
+<style>
+  :root { --ink:#24313b; --bg:#f2f4f6; --card:#fff; --accent:#2f4858; --accent2:#40607a; --soft:#dfe8ee; }
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:var(--bg); color:var(--ink); padding:18px; }
+  .wrap { max-width:1180px; margin:0 auto; }
+  .lede { text-align:center; color:#54646f; margin:6px 0 16px; font-size:15px; max-width:760px; margin-left:auto; margin-right:auto; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:18px; }
+  .card { background:var(--card); border-radius:14px; padding:22px; box-shadow:0 1px 3px rgba(30,50,65,.08); }
+  h2 { font-size:19px; margin-bottom:14px; }
+  label { display:block; font-size:13px; color:#5d6d78; margin:10px 0 4px; }
+  input { width:100%; padding:9px 10px; border:1px solid #c3cfd7; border-radius:8px; font-size:15px; background:#fbfcfd; }
+  button { width:100%; margin-top:16px; padding:12px; border:0; border-radius:9px; background:var(--accent); color:#fff; font-size:15px; font-weight:600; cursor:pointer; }
+  button:hover { background:var(--accent2); }
+  .big { font-size:34px; font-weight:700; margin:14px 0 2px; }
+  .cap { font-size:13px; color:#5d6d78; }
+  .pill { display:inline-block; margin-top:10px; padding:5px 12px; border-radius:20px; font-size:13px; font-weight:600; }
+  .pill.warm { background:var(--soft); color:var(--accent); }
+  table { width:100%; margin-top:12px; border-collapse:collapse; font-size:14px; }
+  td { padding:7px 0; border-bottom:1px solid #dde5ea; }
+  td:last-child { text-align:right; font-weight:600; }
+  .err { color:#a3341f; font-size:14px; margin-top:10px; }
+  .foot { margin-top:20px; font-size:12.5px; color:#6b7982; line-height:1.6; }
+  .foot a { color:var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="lede">One tarp, six numbers of geometry. Pick a pitch, set a ridge height, and see the floor you actually get - in any unit, as long as you use it everywhere.</p>
+  <div class="cards">
+    <div class="card">
+      <h2>A-frame</h2>
+      <label for="a_w">Tarp width (across the ridge)</label>
+      <input id="a_w" type="number" value="3" min="0" step="0.1">
+      <label for="a_l">Tarp length (along the ridge)</label>
+      <input id="a_l" type="number" value="3" min="0" step="0.1">
+      <label for="a_h">Ridge height</label>
+      <input id="a_h" type="number" value="1.2" min="0" step="0.1">
+      <button id="a_go">Pitch the A-frame</button>
+      <div class="big" id="a_fw">-</div>
+      <div class="cap">covered floor width</div>
+      <div class="pill warm" id="a_verdict" style="display:none"></div>
+      <table id="a_rows" style="display:none">
+        <tr><td>floor length</td><td id="a_fl">-</td></tr>
+        <tr><td>covered area</td><td id="a_cov">-</td></tr>
+      </table>
+      <div class="err" id="a_err"></div>
+    </div>
+    <div class="card">
+      <h2>Lean-to</h2>
+      <label for="l_w">Tarp width (the slope panel)</label>
+      <input id="l_w" type="number" value="3" min="0" step="0.1">
+      <label for="l_l">Tarp length (along the ridge)</label>
+      <input id="l_l" type="number" value="3" min="0" step="0.1">
+      <label for="l_h">Ridge height</label>
+      <input id="l_h" type="number" value="1.5" min="0" step="0.1">
+      <button id="l_go">Pitch the lean-to</button>
+      <div class="big" id="l_dep">-</div>
+      <div class="cap">covered floor depth</div>
+      <div class="pill warm" id="l_verdict" style="display:none"></div>
+      <table id="l_rows" style="display:none">
+        <tr><td>floor width</td><td id="l_fw">-</td></tr>
+        <tr><td>covered area</td><td id="l_cov">-</td></tr>
+      </table>
+      <div class="err" id="l_err"></div>
+    </div>
+    <div class="card">
+      <h2>Diamond</h2>
+      <label for="d_s">Tarp side (square tarp)</label>
+      <input id="d_s" type="number" value="3" min="0" step="0.1">
+      <label for="d_h">Ridge height (along the diagonal)</label>
+      <input id="d_h" type="number" value="1" min="0" step="0.1">
+      <button id="d_go">Pitch the diamond</button>
+      <div class="big" id="d_fw">-</div>
+      <div class="cap">covered floor width</div>
+      <div class="pill warm" id="d_verdict" style="display:none"></div>
+      <table id="d_rows" style="display:none">
+        <tr><td>diagonal (ridge + floor length)</td><td id="d_diag">-</td></tr>
+        <tr><td>covered area</td><td id="d_cov">-</td></tr>
+      </table>
+      <div class="err" id="d_err"></div>
+    </div>
+    <div class="card">
+      <h2>Guy line</h2>
+      <label for="g_h">Attachment height on the tarp</label>
+      <input id="g_h" type="number" value="1.5" min="0" step="0.1">
+      <label for="g_d">Stake distance from the wall</label>
+      <input id="g_d" type="number" value="2" min="0" step="0.1">
+      <button id="g_go">Cut the line</button>
+      <div class="big" id="g_line">-</div>
+      <div class="cap">line to cut</div>
+      <div class="pill warm" id="g_verdict" style="display:none"></div>
+      <table id="g_rows" style="display:none">
+        <tr><td>angle to the ground</td><td id="g_ang">-</td></tr>
+      </table>
+      <div class="err" id="g_err"></div>
+    </div>
+  </div>
+  <p class="foot">Exact right-triangle geometry in any consistent unit. Fabric stretch, sag, seam strength, wind and rain are not modeled - nothing here rates a pitch for weather. The sleeper labels describe floor width only. <a href="index.html">Why this exists</a></p>
+</div>
+<script src="engine.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const g = id => parseFloat($(id).value);
+function show(id, txt) { const e = $(id); e.textContent = txt; e.style.display = txt ? 'inline-block' : 'none'; }
+document.getElementById('a_go').onclick = () => {
+  $('a_err').textContent = '';
+  try {
+    const r = Tarpmath.aframe(g('a_w'), g('a_l'), g('a_h'));
+    $('a_fw').textContent = r.floorWidth;
+    show('a_verdict', r.verdict);
+    $('a_fl').textContent = r.floorLength;
+    $('a_cov').textContent = r.coverage;
+    $('a_rows').style.display = 'table';
+  } catch (e) { $('a_err').textContent = e.message; }
+};
+document.getElementById('l_go').onclick = () => {
+  $('l_err').textContent = '';
+  try {
+    const r = Tarpmath.leanto(g('l_w'), g('l_l'), g('l_h'));
+    $('l_dep').textContent = r.floorDepth;
+    show('l_verdict', r.verdict);
+    $('l_fw').textContent = r.floorWidth;
+    $('l_cov').textContent = r.coverage;
+    $('l_rows').style.display = 'table';
+  } catch (e) { $('l_err').textContent = e.message; }
+};
+document.getElementById('d_go').onclick = () => {
+  $('d_err').textContent = '';
+  try {
+    const r = Tarpmath.diamond(g('d_s'), g('d_h'));
+    $('d_fw').textContent = r.floorWidth;
+    show('d_verdict', r.verdict);
+    $('d_diag').textContent = r.diagonal;
+    $('d_cov').textContent = r.coverage;
+    $('d_rows').style.display = 'table';
+  } catch (e) { $('d_err').textContent = e.message; }
+};
+document.getElementById('g_go').onclick = () => {
+  $('g_err').textContent = '';
+  try {
+    const r = Tarpmath.guyline(g('g_h'), g('g_d'));
+    $('g_line').textContent = r.line;
+    show('g_verdict', r.verdict);
+    $('g_ang').textContent = r.angleDeg + ' deg';
+    $('g_rows').style.display = 'table';
+  } catch (e) { $('g_err').textContent = e.message; }
+};
+</script>
+</body>
+</html>
